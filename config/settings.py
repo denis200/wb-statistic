@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     "djoser",
     "rest_framework_simplejwt",
     # local apps
-    "users"
+    "users",
+    "statistic"
 
 ]
 
