@@ -9,7 +9,7 @@ class BaseSerializer(serializers.ModelSerializer):
 class ProductStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductCardState
-        fields = ('product_name','current_price','old_price','brand_name','supplier','tracked_at')
+        fields = ('__all__')
 
 
 class ProductSerializer(serializers.ModelSerializer):

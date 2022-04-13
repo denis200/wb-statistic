@@ -22,7 +22,7 @@ class ProductCardState(models.Model):
     code = models.ForeignKey(ProductCard,verbose_name=_("Артикул"),on_delete=models.DO_NOTHING)
     product_name = models.CharField(max_length=255,verbose_name=_("Название продукта"))
     current_price = models.PositiveIntegerField(verbose_name=_("Текущая цена"))
-    old_price = models.PositiveIntegerField(verbose_name=_("Старая цена"))
+    old_price = models.PositiveIntegerField(verbose_name=_("Старая цена"),null=True,blank = True)
     brand_name = models.CharField(max_length=150,verbose_name=_("Название бренда"))
     supplier = models.CharField(max_length=150,verbose_name=_("Поставщик"))
     tracked_at = models.DateTimeField(auto_now_add=True)
