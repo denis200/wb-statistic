@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-lgwwf$t13a3u#%l_n=p9swmtija$p(%p$ynk62(h1d0)0@(7pb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0']
 
 
 # Application definition
@@ -152,3 +152,8 @@ DJOSER = {
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
 }
+
+CELERY_BROKER_URL = 'redis:///0.0.0.0:6379/0'
+CELERY_RESULT_BACKEND = "redis://0.0.0.0:6379/0"
+CELERY_ACCEPT_CONTENT = ['json'] 
+CELERY_TASK_SERIALIZER = 'json'

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions,views,response
-
+from .tasks import get_state_task,print_hello
 from statistic.utils import get_product_state
 from . import models,serializers
 
@@ -30,6 +30,7 @@ class GetProductState(views.APIView):
 
     def post(self,request):
         code = request.data.get('code')
+        #заменить на get_or_create
         product = models.ProductCard.objects.filter(code = code).first()
         if not product:
             product = models.ProductCard.objects.create(code = code,user=self.request.user)
@@ -41,5 +42,10 @@ class GetProductState(views.APIView):
         serializer.save()
         return response.Response({"success":serializer.data})
 
+
+class PrintView(views.APIView):
+    def get(self,request):
+        print_hello.delay()
+        return response.Response({'ura':'ura'})
 
 
