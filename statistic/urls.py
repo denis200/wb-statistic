@@ -9,5 +9,6 @@ urlpatterns=[
     path('productstate/<int:pk>',views.ProductStateView.as_view({'put':'update','delete':'destroy'})),
 
     path('getstate/',views.GetProductState.as_view()),
-    path('print/',views.PrintView.as_view())
+    path('print/',views.PrintView.as_view()),
+    path('addtrack/',views.TrackingView.as_view())
 ]

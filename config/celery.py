@@ -4,10 +4,10 @@ from celery import Celery
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-app = Celery('config')
+app = Celery('config',broker="redis://localhost:6379")
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
-
+app.conf.timezone = 'Europe/Moscow'
 app.autodiscover_tasks()
 
 

@@ -1,26 +1,30 @@
-version: '3'
+version: "3.7"
 
 services:
-  redis:
-    image: redis
-    restart: always
-  web:
-    build: .
-    restart: always
-    container_name: 'demo_app_django'
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/usr/src/app
-    ports:
-      - '8000:8000'
-  celery:
-    build: .
-    container_name: 'demo_app_celery'
-    command: celery -A config worker -B
-    volumes:
-      - .:/code
-    links:
-      - redis
-    depends_on:
-      - web
-      - redis
+    web:
+        build: .
+        restart: always
+        container_name: "demo_app_django"
+        command: python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - .:/usr/src/app
+        ports:
+            - "8000:8000"
+    celery:
+        build: .
+        container_name: "demo_app_celery"
+        command: celery -A config worker -l INFO
+        volumes:
+            - .:/code
+        depends_on:
+            - redis
+    celery-beat:
+        build: .
+        container_name: "demo_app_celery_beat"
+        command: celery -A config beat -l INFO
+        volumes:
+            - .:/code
+        depends_on:
+            - redis
+    redis:
+        image: redis

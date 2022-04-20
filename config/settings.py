@@ -1,6 +1,8 @@
 from datetime import timedelta
 from pathlib import Path
 
+import statistic
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +16,7 @@ SECRET_KEY = 'django-insecure-lgwwf$t13a3u#%l_n=p9swmtija$p(%p$ynk62(h1d0)0@(7pb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -30,6 +32,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "djoser",
     "rest_framework_simplejwt",
+    "django_celery_beat",
     # local apps
     "users",
     "statistic"
@@ -102,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -153,7 +156,14 @@ DJOSER = {
     },
 }
 
-CELERY_BROKER_URL = 'redis:///0.0.0.0:6379/0'
-CELERY_RESULT_BACKEND = "redis://0.0.0.0:6379/0"
-CELERY_ACCEPT_CONTENT = ['json'] 
-CELERY_TASK_SERIALIZER = 'json'
+
+#CELERY_BEAT_SCHEDULE = {
+#    "scheduled_task":{
+#        "task":"statistic.tasks.print_hello",
+#        "schedule":10.0,
+#    }
+#}
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

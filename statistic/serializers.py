@@ -17,3 +17,9 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProductCard
         fields = ('code','user','states')
+
+
+class CardTrackingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CardTracking
+        fields = ('__all__')
