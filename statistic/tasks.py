@@ -5,10 +5,10 @@ from statistic.utils import get_product_state
 
 
 @app.task
-def get_state_task(code):
+def get_state_task(code,code_id):
+    print(f'Code is {code}, code_id is {code_id}')
     data = get_product_state(code)
-    data['code'] = 1
-    print(type(data))
+    data['code'] = code_id
     ser = serializers.ProductStateSerializer(data = data)
     ser.is_valid(raise_exception=True)
     ser.save()

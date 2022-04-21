@@ -1,9 +1,14 @@
 import json
 from bs4 import BeautifulSoup
 import requests
-
+from django_celery_beat.models import PeriodicTask,IntervalSchedule
+import json
+from datetime import datetime, timedelta
+from . import models
 
 def get_product_state(code):
+    """ Получение данных с сайта Wildberries
+    """
     url = f'https://www.wildberries.ru/catalog/{code}/detail.aspx'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -24,3 +29,31 @@ def get_product_state(code):
     }
 
     return product_state
+
+
+def create_task(data):
+    """ Создание задачи celery
+    """
+    schedule,_ = IntervalSchedule.objects.get_or_create(every=data['interval'], period=IntervalSchedule.SECONDS)
+    code = models.ProductCard.objects.get(pk = data['card']).code
+    PeriodicTask.objects.create(
+          name=f'Get Product State {code} | {datetime.now()}',
+          task='statistic.tasks.get_state_task',
+          interval = schedule,
+          start_time=data['start_tracking'],
+          args = json.dumps([code,data['card']]),
+          expires = data['end_tracking'],
+        )
+
+
+def form_to_json(form):
+    """ Преобразование admin form в dict
+    """
+    track_info = {
+        "start_tracking" : form['start_tracking_0'] +' '+ form['start_tracking_1'],
+        "end_tracking": form['end_tracking_0'] + ' '+ form['end_tracking_1'],
+        "interval": form['interval'],
+        "user": int(form['user']) ,
+        "card": int(form['card']),
+    }
+    return track_info

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions,views,response,generics
 from .tasks import get_state_task,print_hello
-from statistic.utils import get_product_state
+from statistic.utils import create_task, get_product_state
 from . import models,serializers,tasks
 from django_celery_beat.models import PeriodicTask,IntervalSchedule
 import json
@@ -48,32 +48,13 @@ class GetProductState(views.APIView):
         return response.Response({"success":serializer.data})
 
 
-class PrintView(views.APIView):
-    def get(self,request):
-        schedule = IntervalSchedule.objects.create(every=10, period=IntervalSchedule.HOURS)
-        PeriodicTask.objects.create(
-          name='First',
-          task='print_hello',
-          interval = schedule,
-          start_time=timezone.now(),
-        )
-        return response.Response({'ura':'ura'})
-
-
 class TrackingView(generics.CreateAPIView):
     queryset = models.CardTracking.objects.all()
     serializer_class = serializers.CardTrackingSerializer
 
     def perform_create(self,serializer_class):
-        schedule = IntervalSchedule.objects.create(every=10, period=IntervalSchedule.SECONDS)
-        PeriodicTask.objects.create(
-          name=f'Get Product State {datetime.now()}',
-          task='statistic.tasks.get_state_task',
-          interval = schedule,
-          start_time=timezone.now(),
-          args = json.dumps(['8888430']),
-          expires = timezone.now() + timedelta(seconds=30),
-        )
+        data = serializer_class.data
+        create_task(data)
 
 
 
