@@ -1,6 +1,4 @@
 from django.contrib import admin
-
-from .utils import form_to_json
 from .models import CardTracking, ProductCard, ProductCardState
 
 

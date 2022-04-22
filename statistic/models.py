@@ -1,10 +1,10 @@
-import datetime
-from random import choices
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from statistic.utils import create_task
+from statistic.utils import create_task, get_product_state
 from users.models import User
+from rest_framework.response import Response
 from django_celery_beat.models import PeriodicTask
+
 
 
 class ProductCard(models.Model):
@@ -45,8 +45,10 @@ class CardTracking(models.Model):
     interval = models.PositiveIntegerField(null=False, blank=False,choices=CHOICES)
     is_active = models.BooleanField(default=True)
 
+
     def __str__(self) -> str:
         return f'{self.card}'
+
 
     def save(self,*args,**kwargs):
         """ При создании отслеживания создается задача,
@@ -54,11 +56,18 @@ class CardTracking(models.Model):
             меняется активность задачи
         """
         task = PeriodicTask.objects.filter(name__startswith = str(self.card.code))
+
         if not task.exists() and self.is_active == True: 
             create_task(self)
         elif task.exists():
             task.update(enabled = self.is_active)
 
         super().save(*args, **kwargs)
+    
 
+    def delete(self,*args,**kwargs):
+        task = PeriodicTask.objects.filter(name__startswith = str(self.card.code))
+        task.delete()
+        super().delete(*args,**kwargs)
 
+    

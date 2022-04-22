@@ -17,9 +17,3 @@ def save_state(code,code_id):
 def get_state_task(code,code_id):
     data = save_state(code,code_id)
     return data
-
-
-@app.task
-def print_hello():
-    print('hello world')
-    return 2

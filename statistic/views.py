@@ -1,4 +1,6 @@
-from rest_framework import viewsets,permissions,views,response,generics
+from rest_framework import viewsets,permissions,views,response,generics,status
+from rest_framework.response import Response
+from statistic.tasks import save_state
 from statistic.utils import  get_product_state
 from . import models,serializers
 
@@ -13,6 +15,16 @@ class ProductView(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    def create(self, request):
+        data = get_product_state(request.data.get('code'))
+        if data is None:
+            return Response({'Bad Request':'Не удалось получить информацию о товаре'})
+        
+        serializer = self.get_serializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+        serializer.save()
+        return Response({'Success':'Товар успешно создан'})
 
 
 class ProductStateView(viewsets.ModelViewSet):
@@ -29,17 +41,13 @@ class GetProductState(views.APIView):
 
     def post(self,request):
         code = request.data.get('code')
-        #заменить на get_or_create
         product = models.ProductCard.objects.filter(code = code).first()
+
         if not product:
-            product = models.ProductCard.objects.create(code = code,user=self.request.user)
-            product.save()
-        state = get_product_state(code)
-        state['code'] = product.id
-        serializer = serializers.ProductStateSerializer(data = state)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response({"success":serializer.data})
+            return Response({"Bad Request":'Product not found'},status = status.HTTP_404_NOT_FOUND )
+        
+        data = save_state(code,product.id)
+        return response.Response({"success":data},status = status.HTTP_201_CREATED)
 
 
 class TrackingView(generics.CreateAPIView):

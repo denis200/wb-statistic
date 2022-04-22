@@ -1,8 +1,10 @@
 import json
+from msilib.schema import Error
 from bs4 import BeautifulSoup
 import requests
 from django_celery_beat.models import PeriodicTask,IntervalSchedule
 import json
+from rest_framework.response import Response
 from datetime import datetime, timedelta
 
 from . import models
@@ -13,23 +15,27 @@ def get_product_state(code):
     url = f'https://www.wildberries.ru/catalog/{code}/detail.aspx'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    brand = soup.find('h1',class_='same-part-kt__header').text.split('/')[0].replace(u'\xa0', '').strip()
-    title = soup.find('h1',class_='same-part-kt__header').text.split('/')[1].replace(u'\xa0', '').strip()
-    current_price = soup.find('span',class_='price-block__final-price').text.replace(u'\xa0', '').strip()[:-1]
     try:
-        old_price = soup.find(class_='price-block__old-price').text.replace(u'\xa0', '')[:-1]
-    except AttributeError:
-        old_price = None
-    seller = requests.get(f"https://wbx-content-v2.wbstatic.net/sellers/{code}.json").json()['supplierName']
+        brand = soup.find('h1',class_='same-part-kt__header').text.split('/')[0].replace(u'\xa0', '').strip()
+        title = soup.find('h1',class_='same-part-kt__header').text.split('/')[1].replace(u'\xa0', '').strip()
+        current_price = soup.find('span',class_='price-block__final-price').text.replace(u'\xa0', '').strip()[:-1]
+        try:
+            old_price = soup.find(class_='price-block__old-price').text.replace(u'\xa0', '')[:-1]
+        except AttributeError:
+            old_price = None
+        seller = requests.get(f"https://wbx-content-v2.wbstatic.net/sellers/{code}.json").json()['supplierName']
 
-    product_state = {
-        "product_name" : title,
-        "current_price": current_price,
-        "old_price": old_price,
-        "brand_name": brand,
-        "supplier":seller,
-    }
-
+        product_state = {
+            "product_name" : title,
+            "current_price": current_price,
+            "old_price": old_price,
+            "brand_name": brand,
+            "supplier":seller,
+        }
+    except Exception as e:
+        product_state = None
+        
+        
     return product_state
 
 
@@ -46,16 +52,3 @@ def create_task(data):
           args = json.dumps([code,data.card.id]),
           expires = data.end_tracking,
         )
-
-
-def form_to_json(form):
-    """ Преобразование admin form в dict
-    """
-    track_info = {
-        "start_tracking" : form['start_tracking_0'] +' '+ form['start_tracking_1'],
-        "end_tracking": form['end_tracking_0'] + ' '+ form['end_tracking_1'],
-        "interval": form['interval'],
-        "user": int(form['user']) ,
-        "card": int(form['card']),
-    }
-    return track_info
