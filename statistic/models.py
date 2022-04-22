@@ -2,8 +2,9 @@ import datetime
 from random import choices
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from statistic.utils import create_task
 from users.models import User
+from django_celery_beat.models import PeriodicTask
 
 
 class ProductCard(models.Model):
@@ -38,8 +39,26 @@ class CardTracking(models.Model):
     ]
 
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    card = models.ForeignKey(ProductCard,on_delete=models.CASCADE,related_name='tracking_card')
+    card = models.ForeignKey(ProductCard,unique=True, on_delete=models.CASCADE,related_name='tracking_card')
     start_tracking = models.DateTimeField(null=False, blank=False)
     end_tracking = models.DateTimeField(null=False, blank=False)
     interval = models.PositiveIntegerField(null=False, blank=False,choices=CHOICES)
     is_active = models.BooleanField(default=True)
+
+    def __str__(self) -> str:
+        return f'{self.card}'
+
+    def save(self,*args,**kwargs):
+        """ При создании отслеживания создается задача,
+            при изменении активности отслеживания соотвсетсвенно 
+            меняется активность задачи
+        """
+        task = PeriodicTask.objects.filter(name__startswith = str(self.card.code))
+        if not task.exists() and self.is_active == True: 
+            create_task(self)
+        elif task.exists():
+            task.update(enabled = self.is_active)
+
+        super().save(*args, **kwargs)
+
+

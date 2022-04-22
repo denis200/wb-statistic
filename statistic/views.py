@@ -1,13 +1,7 @@
-from django.shortcuts import render
 from rest_framework import viewsets,permissions,views,response,generics
-from .tasks import get_state_task,print_hello
-from statistic.utils import create_task, get_product_state
-from . import models,serializers,tasks
-from django_celery_beat.models import PeriodicTask,IntervalSchedule
-import json
-from datetime import datetime, timedelta
+from statistic.utils import  get_product_state
+from . import models,serializers
 
-from django.utils import timezone
 
 class ProductView(viewsets.ModelViewSet):
     """ CRUD карточек товара"""
@@ -51,10 +45,6 @@ class GetProductState(views.APIView):
 class TrackingView(generics.CreateAPIView):
     queryset = models.CardTracking.objects.all()
     serializer_class = serializers.CardTrackingSerializer
-
-    def perform_create(self,serializer_class):
-        data = serializer_class.data
-        create_task(data)
 
 
 

@@ -1,5 +1,5 @@
 from asyncore import read
-from . import models
+from statistic import models
 from rest_framework import serializers
 
 class BaseSerializer(serializers.ModelSerializer):

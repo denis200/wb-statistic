@@ -4,6 +4,7 @@ import requests
 from django_celery_beat.models import PeriodicTask,IntervalSchedule
 import json
 from datetime import datetime, timedelta
+
 from . import models
 
 def get_product_state(code):
@@ -12,7 +13,8 @@ def get_product_state(code):
     url = f'https://www.wildberries.ru/catalog/{code}/detail.aspx'
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    brand,title = soup.find('h1',class_='same-part-kt__header').text.split('/')
+    brand = soup.find('h1',class_='same-part-kt__header').text.split('/')[0].replace(u'\xa0', '').strip()
+    title = soup.find('h1',class_='same-part-kt__header').text.split('/')[1].replace(u'\xa0', '').strip()
     current_price = soup.find('span',class_='price-block__final-price').text.replace(u'\xa0', '').strip()[:-1]
     try:
         old_price = soup.find(class_='price-block__old-price').text.replace(u'\xa0', '')[:-1]
@@ -34,15 +36,15 @@ def get_product_state(code):
 def create_task(data):
     """ Создание задачи celery
     """
-    schedule,_ = IntervalSchedule.objects.get_or_create(every=data['interval'], period=IntervalSchedule.SECONDS)
-    code = models.ProductCard.objects.get(pk = data['card']).code
+    schedule,_ = IntervalSchedule.objects.get_or_create(every=data.interval, period=IntervalSchedule.SECONDS)
+    code = models.ProductCard.objects.get(pk = data.card.pk).code
     PeriodicTask.objects.create(
-          name=f'Get Product State {code} | {datetime.now()}',
+          name=f'{code} | Get Product State | {datetime.now()}',
           task='statistic.tasks.get_state_task',
           interval = schedule,
-          start_time=data['start_tracking'],
-          args = json.dumps([code,data['card']]),
-          expires = data['end_tracking'],
+          start_time=data.start_tracking,
+          args = json.dumps([code,data.card.id]),
+          expires = data.end_tracking,
         )
 
 
