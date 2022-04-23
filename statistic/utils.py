@@ -4,8 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 from django_celery_beat.models import PeriodicTask,IntervalSchedule
 import json
-from rest_framework.response import Response
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from . import models
 

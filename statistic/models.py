@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from django.db import models
+from django.forms import ValidationError
 from django.utils.translation import gettext_lazy as _
 from statistic.utils import create_task, get_product_state
 from users.models import User
@@ -15,6 +17,12 @@ class ProductCard(models.Model):
 
     def __str__(self):
         return f'Продукт артикул №{self.code}'
+
+    def clean(self) -> None:
+        data = get_product_state(self.code)
+        if not data:
+            raise ValidationError(_('Не удалось получить информацию о товаре.'))
+        return super().clean()
 
 
 class ProductCardState(models.Model):

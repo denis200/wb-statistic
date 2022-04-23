@@ -34,21 +34,19 @@ class ProductStateView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return models.ProductCardState.objects.all()
-
-
-class GetProductState(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self,request):
-        code = request.data.get('code')
-        product = models.ProductCard.objects.filter(code = code).first()
-
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    def create(self, request):
+        code_id = request.data.get('card')
+        product = models.ProductCard.objects.filter(pk = code_id).first()
         if not product:
             return Response({"Bad Request":'Product not found'},status = status.HTTP_404_NOT_FOUND )
         
-        data = save_state(code,product.id)
-        return response.Response({"success":data},status = status.HTTP_201_CREATED)
-
+        data = save_state(product.code,product.id)
+        return response.Response({"Success":data},status = status.HTTP_201_CREATED)
+        
 
 class TrackingView(generics.CreateAPIView):
     queryset = models.CardTracking.objects.all()
