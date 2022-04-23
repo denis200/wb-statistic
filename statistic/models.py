@@ -1,12 +1,9 @@
-from dataclasses import dataclass
 from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import gettext_lazy as _
 from statistic.utils import create_task, get_product_state
 from users.models import User
-from rest_framework.response import Response
 from django_celery_beat.models import PeriodicTask
-
 
 
 class ProductCard(models.Model):
@@ -19,6 +16,8 @@ class ProductCard(models.Model):
         return f'Продукт артикул №{self.code}'
 
     def clean(self) -> None:
+        """ Проверка артикула на возможность получения информации
+        """
         data = get_product_state(self.code)
         if not data:
             raise ValidationError(_('Не удалось получить информацию о товаре.'))
@@ -53,10 +52,8 @@ class CardTracking(models.Model):
     interval = models.PositiveIntegerField(null=False, blank=False,choices=CHOICES)
     is_active = models.BooleanField(default=True)
 
-
     def __str__(self) -> str:
         return f'{self.card}'
-
 
     def save(self,*args,**kwargs):
         """ При создании отслеживания создается задача,
@@ -72,7 +69,6 @@ class CardTracking(models.Model):
 
         super().save(*args, **kwargs)
     
-
     def delete(self,*args,**kwargs):
         task = PeriodicTask.objects.filter(name__startswith = str(self.card.code))
         task.delete()

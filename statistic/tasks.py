@@ -1,10 +1,11 @@
-from celery import shared_task
 from config.celery import app
 from . import serializers
 from statistic.utils import get_product_state
 
 
 def save_state(code,code_id):
+    """ Сохранение полученного состояния в бд
+    """
     data = get_product_state(code)
     data['code'] = code_id
     ser = serializers.ProductStateSerializer(data = data)
@@ -15,5 +16,7 @@ def save_state(code,code_id):
 
 @app.task
 def get_state_task(code,code_id):
+    """ Задача получения состояния товара
+    """
     data = save_state(code,code_id)
     return data

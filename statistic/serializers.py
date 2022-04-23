@@ -1,6 +1,6 @@
-from asyncore import read
 from statistic import models
 from rest_framework import serializers
+
 
 class BaseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -12,11 +12,11 @@ class ProductStateSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductSerializer(BaseSerializer, serializers.ModelSerializer):
     states = ProductStateSerializer(source='productcardstate_set',many=True,read_only=True)
     class Meta:
         model = models.ProductCard
-        fields = ('code','user','states')
+        fields = ('id','code','user','states')
 
 
 class CardTrackingSerializer(serializers.ModelSerializer):
