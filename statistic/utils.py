@@ -1,5 +1,4 @@
 import json
-from msilib.schema import Error
 from bs4 import BeautifulSoup
 import requests
 from django_celery_beat.models import PeriodicTask,IntervalSchedule
