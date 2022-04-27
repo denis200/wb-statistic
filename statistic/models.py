@@ -66,12 +66,13 @@ class CardTracking(models.Model):
             create_task(self)
         elif task.exists():
             task.update(enabled = self.is_active)
+            task[0].save()
 
         super().save(*args, **kwargs)
     
     def delete(self,*args,**kwargs):
         task = PeriodicTask.objects.filter(name__startswith = str(self.card.code))
-        task.delete()
+        task[0].delete()
         super().delete(*args,**kwargs)
 
     
