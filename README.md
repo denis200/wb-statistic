@@ -15,7 +15,7 @@
 
 После создайте базу данных postgres и в данный файл введите соответствующие поля.
 ```
-POSTGRES_USER=#db credentials
+POSTGRES_DB=#db credentials
 POSTGRES_PASSWORD=#db credentials
 ```
 Чтобы поднять контейнер, выполните команду:
